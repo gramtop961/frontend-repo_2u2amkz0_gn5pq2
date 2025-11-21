@@ -1,12 +1,42 @@
-import React from "react";
-import ThreeDShowcase from "./components/ThreeDHouse";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import Navbar from "./components/Navbar";
+import MagneticCursor from "./components/MagneticCursor";
+import SplineShowcase from "./components/SplineShowcase";
 
 export default function App() {
+  const [active, setActive] = useState("hero");
+  const sectionsRef = useRef({});
+
+  useEffect(() => {
+    const ids = ["hero", "showcase", "gallery", "info", "contact"];
+    const options = { root: null, rootMargin: "-40% 0px -50% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActive(entry.target.id);
+        }
+      });
+    }, options);
+
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        sectionsRef.current[id] = el;
+        observer.observe(el);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
+      <Navbar active={active} />
+      <MagneticCursor />
+
       {/* Hero */}
-      <section className="relative flex items-center justify-center h-[88vh] overflow-hidden">
+      <section id="hero" className="relative flex items-center justify-center h-[88vh] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           <div className="absolute -inset-40 bg-[radial-gradient(ellipse_at_top_right,rgba(184,115,51,0.15),transparent_60%)]" />
           <div className="absolute -inset-40 bg-[radial-gradient(ellipse_at_bottom_left,rgba(217,119,6,0.12),transparent_60%)]" />
@@ -17,21 +47,21 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70"
-         >
+          >
             Zürich Estates
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0, transition: { delay: 0.1 } }}
             className="mt-4 text-lg md:text-xl text-white/70 max-w-2xl mx-auto"
-         >
+          >
             Ultra-modern living with a cinematic, black & copper aesthetic. Scroll for an immersive 3D showcase tailored for Zürich.
           </motion.p>
           <div className="mt-8 flex justify-center gap-4">
-            <a href="#gallery" className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-black font-medium hover:brightness-110 transition">
+            <a data-magnetic href="#gallery" className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-black font-medium hover:brightness-110 transition">
               View Listings
             </a>
-            <a href="#contact" className="px-6 py-3 rounded-full bg-white/5 text-white ring-1 ring-white/15 hover:bg-white/10 transition">
+            <a data-magnetic href="#contact" className="px-6 py-3 rounded-full bg-white/5 text-white ring-1 ring-white/15 hover:bg-white/10 transition">
               Book a Tour
             </a>
           </div>
@@ -39,10 +69,8 @@ export default function App() {
         <div className="absolute bottom-8 text-white/60 animate-bounce">Scroll ↓</div>
       </section>
 
-      {/* 3D Showcase */}
-      <section className="relative">
-        <ThreeDShowcase />
-      </section>
+      {/* High-fidelity 3D Showcase (Spline) */}
+      <SplineShowcase />
 
       {/* Gallery */}
       <section id="gallery" className="py-24 bg-gradient-to-b from-[#0a0a0a] to-[#0c0c0c]">
@@ -50,7 +78,8 @@ export default function App() {
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
-              className="group rounded-2xl overflow-hidden bg-white/5 backdrop-blur ring-1 ring-white/10 hover:ring-white/20 hover:shadow-[0_10px_60px_rgba(184,115,51,0.18)] hover:-translate-y-1 transition-all"
+              data-magnetic
+              className="group rounded-2xl overflow-hidden bg-white/5 backdrop-blur ring-1 ring-white/10 transition-all hover:ring-white/20 hover:shadow-[0_10px_60px_rgba(184,115,51,0.18)] hover:-translate-y-1 hover:[transform:perspective(800px)_rotateX(2deg)]"
             >
               <div className="h-48 bg-gradient-to-br from-amber-400/25 via-orange-500/20 to-amber-600/25" />
               <div className="p-5">
@@ -64,7 +93,7 @@ export default function App() {
       </section>
 
       {/* Info */}
-      <section className="py-24">
+      <section id="info" className="py-24">
         <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-4">
             <h2 className="text-3xl md:text-4xl font-bold">Swiss precision, copper warmth</h2>
@@ -118,11 +147,26 @@ export default function App() {
                 placeholder="I’m interested in lakefront properties…"
               />
             </div>
-            <button className="inline-flex items-center justify-center px-5 py-2.5 rounded-md bg-gradient-to-r from-amber-400 to-orange-500 text-black font-medium hover:brightness-110 transition">
+            <button data-magnetic className="inline-flex items-center justify-center px-5 py-2.5 rounded-md bg-gradient-to-r from-amber-400 to-orange-500 text-black font-medium hover:brightness-110 transition">
               Send
             </button>
           </form>
         </div>
+      </section>
+
+      {/* Zürich skyline silhouette */}
+      <section aria-hidden className="relative">
+        <svg viewBox="0 0 1200 120" className="w-full h-24" preserveAspectRatio="none">
+          <path
+            d="M0,80 L60,80 L80,60 L110,60 L120,40 L150,40 L160,50 L200,50 L210,30 L230,30 L240,55 L260,55 L280,42 L310,42 L320,70 L350,70 L360,48 L380,48 L400,62 L440,62 L450,38 L470,38 L480,60 L520,60 L540,45 L560,45 L580,65 L620,65 L640,35 L660,35 L680,55 L720,55 L740,41 L760,41 L780,63 L820,63 L840,47 L860,47 L880,58 L920,58 L940,44 L960,44 L980,66 L1020,66 L1040,52 L1060,52 L1080,60 L1120,60 L1140,48 L1160,48 L1180,58 L1200,58"
+            fill="none"
+            stroke="#b87333"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.7"
+          />
+        </svg>
       </section>
 
       <footer className="py-10 text-center text-white/50 text-sm">
