@@ -22,8 +22,11 @@
   }
 }
 
-/* Custom utility classes for shadcn/ui patterns */
+/* 3D helpers */
 @layer utilities {
+  .perspective { perspective: 1000px; }
+  .preserve-3d { transform-style: preserve-3d; }
+
   .animate-in {
     animation-name: animateIn;
     animation-duration: 350ms;
